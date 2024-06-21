@@ -66,19 +66,21 @@ def cruce(c1, c2):
     return ch_1, ch_2
 
 #benja
-def fitness(poblacion):
-    #ordenar  poblacion y eliminar penkas
-    pass
+def fitness():
+    #Se ordena de Menor a mayor segun los pasos que dan 
+    POBLACION.sort(key=lambda sujeto: sujeto.pasos)
 
 #pablo Implementa un mecanismo de selección que favorece a los individuos que realizan menos movimientos para llegar al borde seleccionado.
 def seleccion(poblacion_ordenada):
     #retornar dos indivduos segun pasos
     pass
 
-#bejna
+#benja
 def rellenar_poblacion(): 
-    #rellenar
-    pass
+    dif = -NPob - len(POBLACION) 
+    if dif > 0 :
+        for i in range(dif):
+            POBLACION.append(individuo.generar_genes())
 
 #carlo
 def init_poblacion():
