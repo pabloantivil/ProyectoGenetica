@@ -70,10 +70,11 @@ def fitness():
     #Se ordena de Menor a mayor segun los pasos que dan 
     POBLACION.sort(key=lambda sujeto: sujeto.pasos)
 
-#pablo Implementa un mecanismo de selección que favorece a los individuos que realizan menos movimientos para llegar al borde seleccionado.
+#pablo Funcion de seleccion que devuelve los dos mejores individuos por su fitness 
 def seleccion(poblacion_ordenada):
-    #retornar dos indivduos segun pasos
-    pass
+    c1 = poblacion_ordenada[0]
+    c2 = poblacion_ordenada[1]
+    return c1, c2
 
 #benja
 def rellenar_poblacion(): 
