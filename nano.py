@@ -16,12 +16,9 @@ class individuo:
         self.pasos = 0
         self.is_live = True
         self.position = position
-<<<<<<< Updated upstream
         # self asesino (true o false)
 
-=======
         self.direcciones = {0: 'n', 1: 's', 2: 'e', 3: 'o', 4: 'ne', 5: 'no', 6: 'se', 7: 'so', 8: 'asesino'}
->>>>>>> Stashed changes
         # [n, s, e, o, ne, no, se, so, asesino]
         #self.gen()
 
