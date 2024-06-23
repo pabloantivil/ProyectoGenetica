@@ -16,10 +16,13 @@ class individuo:
         self.pasos = 0
         self.is_live = True
         self.position = position
+<<<<<<< Updated upstream
         # self asesino (true o false)
 
+=======
+        self.direcciones = {0: 'n', 1: 's', 2: 'e', 3: 'o', 4: 'ne', 5: 'no', 6: 'se', 7: 'so', 8: 'asesino'}
+>>>>>>> Stashed changes
         # [n, s, e, o, ne, no, se, so, asesino]
-        # [1, 1, 1, 1, 1,  1,   1,   1,     1]/24
         #self.gen()
 
         if len(self.genes) == 0:
@@ -56,6 +59,8 @@ class individuo:
     #coto
     def move(self):
         #muevete CTM
+        direccion = self.direcciones[np.random.choice(9, p=self.genes)]
+        nueva_pos = posicionar(self.position, direccion)
         #retornar poss
         pass
 
@@ -106,12 +111,29 @@ def init_poblacion():
     #generar poblacion
     pass
 
-
+                                     
 
 # coto
-def posisionar():
-    # dar posisiones iniciales
-    pass
+def posicionar(posicion, direccion, valorX, valorY):
+    # Función para actualizar la posición según la dirección
+    if direccion == 'n':
+        return (posicion[0], max(0, posicion[1] - 1))
+    elif direccion == 's':
+        return (posicion[0], min(valorY, posicion[1] + 1))
+    elif direccion == 'e':
+        return (min(valorX, posicion[0] + 1), posicion[1])
+    elif direccion == 'o':
+        return (max(0, posicion[0] - 1), posicion[1])
+    elif direccion == 'ne':
+        return (min(valorX, posicion[0] + 1), max(0, posicion[1] - 1))
+    elif direccion == 'no':
+        return (max(0, posicion[0] - 1), max(0, posicion[1] - 1))
+    elif direccion == 'se':
+        return (min(valorX, posicion[0] + 1), min(valorY, posicion[1] + 1))
+    elif direccion == 'so':
+        return (max(0, posicion[0] - 1), min(valorY, posicion[1] + 1))
+    elif direccion == 'asesino':
+        return posicion
 
 
 #
