@@ -1,4 +1,5 @@
 import random
+import numpy as np
 
 NPob = 10 
 SEED = 12
@@ -15,6 +16,7 @@ class individuo:
         self.pasos = 0
         self.is_live = True
         self.position = position
+        # self asesino (true o false)
 
         # [n, s, e, o, ne, no, se, so, asesino]
         # [1, 1, 1, 1, 1,  1,   1,   1,     1]/24
@@ -28,13 +30,29 @@ class individuo:
     #javier
     def generar_genes(self):
         #generear los genes de el individuo
-        pass
+        genes = self.normalizar([np.random.uniform() for _ in range(8)])
+        return genes
     
     #javier 
     def mutar(self):
         # puedes cambiar los gene segun 
+        prob_mutacion = 0.1  
+# 
+        if np.random.uniform() <= prob_mutacion:
+            index = np.random.randint(9)
+            self.genes[index] = np.random.uniform()
+            self.genes = self.normalizar(self.genes)
         pass
+    
+    def normalizar(vec):
+        normalizado = []
+        x = sum(vec)
+        for i in vec:
+            normalizado.append(i/x)
+        return normalizado
 
+    
+    
     #coto
     def move(self):
         #muevete CTM
