@@ -196,29 +196,17 @@ def posicionar(posm,posicion,a):
             return posicion
     else: 
         return ori
-    
-
 
 gen = 0
 pasos = 0
-fig, ax = plt.subplots(figsize=(8, 8))
 
-im = ax.imshow(Map, cmap='Reds', interpolation='nearest')
-plt.colorbar(im, ax=ax)
-ax.set_title('Posiciones finales de generacion')
-ax.axis('off')
-init_Poblacion()
-
-
-plt.grid(color = 'green', linestyle = '--', linewidth = 0.5)
-
-    # Función de inicialización para la animación
+# Función de inicialización para la animación
 def init():
     print("generacion 0")
     im.set_data(Map)
     return [im]
-    # Función de animación que se ejecutará en cada cuadro
 
+# Función de animación que se ejecutará en cada cuadro
 def animate(i):
     global pasos, npasos,gen
     if pasos == npasos:
@@ -237,5 +225,32 @@ def animate(i):
     pasos += 1
     return [im]
 
+fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(8, 8))  
+plt.subplots_adjust(wspace=0.5)
+
+im = ax1.imshow(Map, cmap='Reds', interpolation='nearest')
+plt.colorbar(im, ax=ax1)
+ax1.set_title('Posiciones finales de generacion')
+ax1.axis('on')
+init_Poblacion()
+ax1.grid(color = 'black', linestyle = '--', linewidth = 0.5)
 ani = animation.FuncAnimation(fig, animate, frames=nGen * npasos, init_func=init, blit=True)
+
+#ax2.plot(gen, [:nGen], color='red', label='Muertos')
+ax2.set_xlabel('Generaciones')
+ax2.set_ylabel('Cantidad')
+ax2.set_title('Muertos por Generación')
+
+#ax3.plot(gen, [:nGen], color='blue', label='Asesinados')
+ax3.set_xlabel('Generaciones')
+ax3.set_ylabel('Cantidad')
+ax3.set_title('Asesinados por Generación')
+
+#ax4.plot(gen, [:nGen], color='green', label='Ganadores')
+ax4.set_xlabel('Generaciones')
+ax4.set_ylabel('Cantidad')
+ax4.set_title('Ganadores por Generación')
+
+plt.tight_layout()
 plt.show()
+
