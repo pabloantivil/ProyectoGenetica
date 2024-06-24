@@ -2,7 +2,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-NPob = 1 
+NPob = 10
 Seed = 12
 NCicles = 2
 Poblacion = []
@@ -67,9 +67,9 @@ class individuo:
 
     #coto
     def move(self):
-        mov = np.random.randint(len(self.genes))# 8,1 OCHOYUNO
+        mov = np.random.randint(len(self.genes)-1)# 8,1 OCHOYUNO
         if self.genes[mov] == 1 :
-            self.position=posicionar(mov , self.position, self.genes[8])
+            self.position=posicionar(mov , self.position.copy(), self.genes[8])
 
 
 # pablo 
@@ -123,7 +123,7 @@ def colision(pos):
         if a.position[0] == pos[0] and a.position[1] == pos[1]:
             return True , index_indi  
         index_indi +=1                          
-    return False
+    return False ,index_indi
 
 # coto
 """Map = [[0,X,0,0],
@@ -159,12 +159,8 @@ def posicionar(posm,posicion,a):
         posicion[0]+=1 ; posicion[1]+=1
     elif posm == 7:
         #so
-        posicion[0]+=1 ; posicion[0]-=1; 
-    
-    print(ori)
-    print(posicion)
-    
-    if posicion[0]>=0 and posicion[1]>=0 and posicion[0]<=len(Map) and posicion[1] <= len(Map):
+        posicion[0]+=1 ; posicion[1]-=1; 
+    if posicion[0]>=0 and posicion[1]>=0 and posicion[0]<=Map_x and posicion[1] <= Map_y:
         colisiono , indexcol = colision(posicion)
         if colisiono:
             if a == 1:
@@ -179,16 +175,17 @@ def posicionar(posm,posicion,a):
         return ori
 Map = np.empty((Map_x, Map_y), dtype=object)
 init_Poblacion()
-gen = 9
+gen = 10
 
 while(gen <= nGen ):
     pasos = 0
     while(pasos <= nPasos):
         for indi in Poblacion :
             indi.move()
-
+            print(indi.position,pasos)
         pasos += 1
     gen += 1 
+    print("Asesinatos : ",Asesinatos)
 
 def graficar(poblacion, gen, paso):
     plt.figure(figsize=(10, 10))
