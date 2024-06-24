@@ -74,8 +74,6 @@ class individuo:
             self.position=posicionar(mov , self.position.copy(), self.genes[8])
 
 
-
-
 # pablo 
 def cruce(c1, c2):
     # Dividir c1 y c2 en dos partes
@@ -103,8 +101,27 @@ def fitness():
     #Se ordena de Menor a mayor segun los pasos que dan 
     Poblacion.sort(key=lambda sujeto: sujeto.pasos)
 
-def seleccion(Poblacion_ordenada):
-    pass
+def probabilidades(individuos):
+    p = 0.3
+    for i, individuo in enumerate(individuos):
+        probabilidad = p * (1 - p) ** i
+        individuo.seleccion = probabilidad
+
+def seleccion(poblacion):
+    poblacion.sort(key=lambda sujeto: sujeto.pasos)
+    
+    probabilidades(poblacion)
+    
+    sel = []
+    while len(sel) < 2:
+        for individuo in poblacion:
+            if random.random() < individuo.seleccion:
+                sel.append(individuo)
+            if len(sel) == 2:
+                break
+            
+    c1, c2 = sel[0], sel[1]
+    return c1, c2
 
 #benja
 def rellenar_Poblacion(): 
