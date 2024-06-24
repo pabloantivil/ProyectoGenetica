@@ -1,21 +1,24 @@
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
-NPob = 10 
-SEED = 12
+NPob = 1 
+Seed = 12
 NCicles = 2
 Poblacion = []
-MAP = [[]]
+Map = [[]]
 nGen = 10
-nPasos = 10
+nPasos = 50
 Asesinatos = 0
+Map_x = 10
+Map_y = 10
 
 class individuo:
     def __init__(self,genes=[],position=[0,0]) -> None:
         self.genes = genes
         self.pasos = 0
         self.is_live = True
-        self.position = position
+        self.position = self.ini_position()
         # self asesino (true o false)
 
         # [n, s, e, o, ne, no, se, so, asesino]
@@ -26,23 +29,34 @@ class individuo:
             self.generar_genes()
         else:
             self.mutar()
-        
+    
+    def ini_position(self):
+            Map.fill(None)
+            while True:
+                Pos_x = np.random.randint(0, Map_x)
+                Pos_y = np.random.randint(0, 2)
+                if Map[Pos_x, Pos_y] is None:
+                    self.position = [Pos_x, Pos_y]
+                    Map[Pos_x, Pos_y] = self
+                    return ([Pos_x, Pos_y])
+                else: 
+                    init_Poblacion(self)
     #javier
     def generar_genes(self):
         #generear los genes de el individuo
-        genes = self.normalizar([np.random.uniform() for _ in range(9)])
-        return genes
+        self.genes = [np.random.randint(0,2) for _ in range(9)]
+        
     
     #javier 
     def mutar(self):
         # puedes cambiar los gene segun 
         prob_mutacion = 0.1  
-# 
+        
         if np.random.uniform() <= prob_mutacion:
             index = np.random.randint(9)
             self.genes[index] = np.random.uniform()
             self.genes = self.normalizar(self.genes)
-        pass
+
     
     def normalizar(vec):
         normalizado = []
@@ -51,11 +65,9 @@ class individuo:
             normalizado.append(i/x)
         return normalizado
 
-    
-    
     #coto
     def move(self):
-        mov = np.random.randint(len(self.genes))
+        mov = np.random.randint(len(self.genes))# 8,1 OCHOYUNO
         if self.genes[mov] == 1 :
             self.position=posicionar(mov , self.position, self.genes[8])
 
@@ -87,12 +99,8 @@ def fitness():
     #Se ordena de Menor a mayor segun los pasos que dan 
     Poblacion.sort(key=lambda sujeto: sujeto.pasos)
 
-#pablo Funcion de seleccion que devuelve los dos mejores individuos por su fitness 
 def seleccion(Poblacion_ordenada):
-    c1 = Poblacion_ordenada[0]
-    c2 = Poblacion_ordenada[1]
-    return c1, c2
-
+    pass
 #benja
 def rellenar_Poblacion(): 
     dif = -NPob - len(Poblacion) 
@@ -102,10 +110,11 @@ def rellenar_Poblacion():
 
 #carlo
 def init_Poblacion():
+    global Poblacion
     for x in range(NPob):
         i = individuo(position=[x,0])
         Poblacion.append(i)
-        MAP[x][0] = i
+        Map[x][0] = i
     
 
 def colision(pos):
@@ -117,13 +126,15 @@ def colision(pos):
     return False
 
 # coto
-"""MAP = [[0,X,0,0],
+"""Map = [[0,X,0,0],
           [0,0,0,0],
           [0,0,0,0],
           [0,0,0,0]]
 """
 
 def posicionar(posm,posicion,a):
+    global Asesinatos
+    ori = posicion.copy()
         # [n, s, e, o, ne, no, se, so, asesino]
     if posm == 0 :
         #n
@@ -150,23 +161,41 @@ def posicionar(posm,posicion,a):
         #so
         posicion[0]+=1 ; posicion[0]-=1; 
     
-    if posicion[0]>=0 and posicion[1]>=0 and posicion[0]<=len(MAP) and posicion[1] <= len(MAP):
+    print(ori)
+    print(posicion)
+    
+    if posicion[0]>=0 and posicion[1]>=0 and posicion[0]<=len(Map) and posicion[1] <= len(Map):
         colisiono , indexcol = colision(posicion)
         if colisiono:
             if a == 1:
                 Poblacion.pop(indexcol)
                 Asesinatos +=1
                 return posicion
+            else:
+                return ori
         else :
             return posicion
+    else: 
+        return ori
+Map = np.empty((Map_x, Map_y), dtype=object)
+init_Poblacion()
+gen = 9
 
-def main():
-    gen = 1
-    while(gen <= nGen ):
-        while():
-            pass
-        pass
+while(gen <= nGen ):
+    pasos = 0
+    while(pasos <= nPasos):
+        for indi in Poblacion :
+            indi.move()
 
-    pass
+        pasos += 1
+    gen += 1 
 
+def graficar(poblacion, gen, paso):
+    plt.figure(figsize=(10, 10))
+    plt.xlim(0, Map_x)
+    plt.ylim(0, Map_y)
+    plt.grid(True)
+    plt.gca().set_facecolor('white')
+    plt.show()
+    
 
