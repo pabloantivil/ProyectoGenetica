@@ -1,18 +1,20 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
-from graphic import graphic
+from matplotlib import animation
 
+seed = 19680801 
+np.random.seed(seed)
+print("semilla:", seed)
 NPob = 10
-Seed = 12
 NCicles = 10
 Poblacion = []
-Map = [[]]
 nGen = 10
-nPasos = 50
+npasos = 50
 Asesinatos = 0
 Map_x = 10
 Map_y = 10
+Map = np.full((Map_x, Map_y), False)
 
 class individuo:
     def __init__(self,genes=[],position=[0,0]) -> None:
@@ -20,28 +22,27 @@ class individuo:
         self.pasos = 0
         self.is_live = True
         self.position = self.ini_position()
+    
         # self asesino (true o false)
 
         # [n, s, e, o, ne, no, se, so, asesino]
         # [1, 1, 0, 1, 0 , 1,   0,  1,     0  ]
         #self.gen()
-
+    
         if len(self.genes) == 0:
             self.generar_genes()
         else:
             self.mutar()
     
     def ini_position(self):
-            Map.fill(None)
-            while True:
-                Pos_x = np.random.randint(0, Map_x)
-                Pos_y = np.random.randint(0, 2)
-                if Map[Pos_x, Pos_y] is None:
-                    self.position = [Pos_x, Pos_y]
-                    Map[Pos_x, Pos_y] = self
-                    return ([Pos_x, Pos_y])
-                else: 
-                    init_Poblacion(self)
+            Pos_x = np.random.randint(0, Map_x-1)
+            Pos_y = np.random.randint(0, 2)
+            if not Map[Pos_x, Pos_y] :
+                self.position = [Pos_x, Pos_y]
+                Map[Pos_x, Pos_y] = True
+                return ([Pos_x, Pos_y])
+            else: 
+               return self.ini_position()
     #javier
     def generar_genes(self):
         #generear los genes de el individuo
@@ -110,15 +111,15 @@ def rellenar_Poblacion():
     dif = -NPob - len(Poblacion) 
     if dif > 0 :
         for i in range(dif):
-            Poblacion.append(individuo.generar_genes())
+            Poblacion.append(individuo)
 
 #carlo
 def init_Poblacion():
     global Poblacion
     for x in range(NPob):
-        i = individuo(position=[x,0])
+        i = individuo()
         Poblacion.append(i)
-        Map[x][0] = i
+        Map[i.position[0]][i.position[1]] = True
     
 
 def colision(pos):
@@ -164,10 +165,11 @@ def posicionar(posm,posicion,a):
     elif posm == 7:
         #so
         posicion[0]+=1 ; posicion[1]-=1; 
-    if posicion[0]>=0 and posicion[1]>=0 and posicion[0]<=Map_x and posicion[1] <= Map_y:
+    if posicion[0]>=0 and posicion[1]>=0 and posicion[0]<Map_x and posicion[1] < Map_y:
         colisiono , indexcol = colision(posicion)
         if colisiono:
             if a == 1:
+                Map[Poblacion[indexcol].position[0],Poblacion[indexcol].position[1]] = False
                 Poblacion.pop(indexcol)
                 Asesinatos +=1
                 return posicion
@@ -177,18 +179,46 @@ def posicionar(posm,posicion,a):
             return posicion
     else: 
         return ori
-Map = np.empty((Map_x, Map_y), dtype=object)
-init_Poblacion()
+    
+
+
 gen = 0
+pasos = 0
+fig, ax = plt.subplots(figsize=(8, 8))
 
-while(gen <= nGen ):
-    pasos = 0
-    print("gen: ",gen)
-    while(pasos <= nPasos):
+im = ax.imshow(Map, cmap='Reds', interpolation='nearest')
+plt.colorbar(im, ax=ax)
+ax.set_title('Posiciones finales de generacion')
+ax.axis('off')
+init_Poblacion()
+
+
+plt.grid(color = 'green', linestyle = '--', linewidth = 0.5)
+
+    # Función de inicialización para la animación
+def init():
+    print("generacion 0")
+    im.set_data(Map)
+    return [im]
+    # Función de animación que se ejecutará en cada cuadro
+
+def animate(i):
+    global pasos, npasos,gen
+    if pasos == npasos:
+        Map.fill(False)
+        gen += 1 
+        pasos = 0
+        print("Asesinatos : ",Asesinatos)
+        print("generacion N°",gen)
+    else:
         for indi in Poblacion :
+            Map[indi.position[0],indi.position[1]] = False
             indi.move()
-        pasos += 1
-    gen += 1 
-    print("Asesinatos : ",Asesinatos)
+            Map[indi.position[0],indi.position[1]] = True
 
+    im.set_data(Map)
+    pasos += 1
+    return [im]
 
+ani = animation.FuncAnimation(fig, animate, frames=nGen * npasos, init_func=init, blit=True)
+plt.show()

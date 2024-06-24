@@ -29,7 +29,6 @@ def animate(i):
     im.set_data(gens[i])
     return [im]
 
-
 # Crea la animación usando las funciones anteriores
 ani = animation.FuncAnimation(fig, animate, frames=num_generations, init_func=init, blit=True)
 plt.show()
