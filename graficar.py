@@ -11,7 +11,6 @@ def graficar(final_positions_over_generations,num_generations,cantidad_generacio
 
     # Configuración de la animación
     im = axs[0, 2].imshow((final_positions_over_generations[0] != None), cmap='Reds', interpolation='nearest')
-    plt.colorbar(im, ax=axs[0, 2])
     axs[0, 2].set_title('Posiciones finales de generacion')
     axs[0, 2].axis('off')
 
@@ -25,7 +24,7 @@ def graficar(final_positions_over_generations,num_generations,cantidad_generacio
         im.set_data((final_positions_over_generations[i] != None))
         return [im]
 
-    # Crea la animación usando las funciones anteriores
+    # Crea la animación usando las funciones anteriores         
     ani = animation.FuncAnimation(fig, animate, frames=num_generations, init_func=init, blit=True)
 
     # Guarda la animación como un archivo .gif

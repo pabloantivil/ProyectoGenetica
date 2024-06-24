@@ -1,10 +1,11 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+from graphic import graphic
 
 NPob = 10
 Seed = 12
-NCicles = 2
+NCicles = 10
 Poblacion = []
 Map = [[]]
 nGen = 10
@@ -72,6 +73,8 @@ class individuo:
             self.position=posicionar(mov , self.position.copy(), self.genes[8])
 
 
+
+
 # pablo 
 def cruce(c1, c2):
     # Dividir c1 y c2 en dos partes
@@ -101,6 +104,7 @@ def fitness():
 
 def seleccion(Poblacion_ordenada):
     pass
+
 #benja
 def rellenar_Poblacion(): 
     dif = -NPob - len(Poblacion) 
@@ -175,24 +179,16 @@ def posicionar(posm,posicion,a):
         return ori
 Map = np.empty((Map_x, Map_y), dtype=object)
 init_Poblacion()
-gen = 10
+gen = 0
 
 while(gen <= nGen ):
     pasos = 0
+    print("gen: ",gen)
     while(pasos <= nPasos):
         for indi in Poblacion :
             indi.move()
-            print(indi.position,pasos)
         pasos += 1
     gen += 1 
     print("Asesinatos : ",Asesinatos)
 
-def graficar(poblacion, gen, paso):
-    plt.figure(figsize=(10, 10))
-    plt.xlim(0, Map_x)
-    plt.ylim(0, Map_y)
-    plt.grid(True)
-    plt.gca().set_facecolor('white')
-    plt.show()
-    
 
