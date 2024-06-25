@@ -7,39 +7,45 @@ seed = 19680801
 np.random.seed(seed)
 print("semilla:", seed)
 NPob = 10
-NCicles = 10
 Poblacion = []
 nGen = 10
 npasos = 50
 Asesinatos = 0
 Map_x = 10
 Map_y = 10
-Map = np.full((Map_x, Map_y), False)
+Map = np.full((Map_x, Map_y,3),255)
+
+# Para almacenar datos de las gráficas
+muertes_por_generacion = []
+asesinatos_por_generacion = []
+ganadores_por_generacion = []
 
 class individuo:
     def __init__(self,genes=[],position=[0,0]) -> None:
         self.genes = genes
         self.pasos = 0
         self.is_live = True
-        self.position = self.ini_position()
     
         # self asesino (true o false)
 
         # [n, s, e, o, ne, no, se, so, asesino]
         # [1, 1, 0, 1, 0 , 1,   0,  1,     0  ]
         #self.gen()
-    
+
         if len(self.genes) == 0:
             self.generar_genes()
         else:
             self.mutar()
-    
+        self.color = self.getColor()
+        self.position = self.ini_position()
+        
+            
     def ini_position(self):
             Pos_x = np.random.randint(0, Map_x-1)
             Pos_y = np.random.randint(0, 2)
-            if not Map[Pos_x, Pos_y] :
+            if np.array_equal( Map[Pos_x, Pos_y], np.array([255,255,255])):
                 self.position = [Pos_x, Pos_y]
-                Map[Pos_x, Pos_y] = True
+                Map[Pos_x, Pos_y] = self.color
                 return ([Pos_x, Pos_y])
             else: 
                return self.ini_position()
@@ -60,7 +66,7 @@ class individuo:
             self.genes = self.normalizar(self.genes)
 
     
-    def normalizar(vec):
+    def normalizar(self,vec):
         normalizado = []
         x = sum(vec)
         for i in vec:
@@ -73,10 +79,35 @@ class individuo:
         if self.genes[mov] == 1 :
             self.position=posicionar(mov , self.position.copy(), self.genes[8])
 
-    def getColor():
-       # suma = [0.2, 0.2, 0.1, 0.6, 0.4, 0.4, , so]
-        pass
+    def getColor(self):
+    # Ponderaciones para los colores RGB según las direcciones
+        ponderaciones = [-0.1, -0.1, -0.2, 0.6, -0.15, 0.2, -0.15, 0.2]
+        # Calcular la suma ponderada de los genes y las ponderaciones
+        suma = sum(ponderaciones[x] * self.genes[x] for x in range(len(ponderaciones)))
+        # Asegurarse de que suma esté en el rango [-1, 1]
+        suma = max(-1, min(suma, 1))
+        # Mapear la suma al rango de 0 a 255 para los colores RGB
+        if suma > 0:
+            color_value = int(suma * 255)  # Para valores positivos
+            # Ajustar intensidad según la dirección
+            if self.genes[3] == 1:  # oeste
+                color_value = min(color_value + 50, 255)  # Incrementar el canal azul para oeste
+            if self.genes[5] == 1:  # noroeste
+                color_value = min(color_value + 70, 255)  # Incrementar el canal azul más para noroeste
+            if self.genes[7] == 1:  # suroeste
+                color_value = min(color_value + 70, 255)  # Incrementar el canal azul más para suroeste
+            return (color_value, 0, 0)
+        else:
+            color_value = int(-suma * 255)  # Para valores negativos
+            # Ajustar intensidad según la dirección
+            if self.genes[3] == 1:  # oeste
+                color_value = min(color_value + 50, 255)  # Incrementar el canal rojo para oeste
+            if self.genes[5] == 1:  # noroeste
+                color_value = min(color_value + 70, 255)  # Incrementar el canal rojo más para noroeste
+            if self.genes[7] == 1:  # suroeste
+                color_value = min(color_value + 70, 255)  # Incrementar el canal rojo más para suroeste
 
+            return (0, 0, color_value)
 
 # pablo 
 def cruce(c1, c2):
@@ -134,7 +165,7 @@ def rellenar_Poblacion():
         for i in range(dif):
             x = individuo()
             Poblacion.append(x)
-            Map[x.position[0]][x.position[1]] = True
+            Map[x.position[0]][x.position[1]] = x.color
 #carlo
 def init_Poblacion():
     global Poblacion , Map_x
@@ -142,7 +173,7 @@ def init_Poblacion():
         for x in range(NPob):
             i = individuo()
             Poblacion.append(i)
-            Map[i.position[0]][i.position[1]] = True
+            Map[i.position[0]][i.position[1]] = i.color
     
 def asalvo(pos):
     if pos[1] == Map_y-1 :
@@ -191,7 +222,7 @@ def posicionar(posm,posicion,a):
         colisiono , indexcol = colision(posicion)
         if colisiono:
             if a == 1:
-                Map[Poblacion[indexcol].position[0],Poblacion[indexcol].position[1]] = False
+                Map[Poblacion[indexcol].position[0],Poblacion[indexcol].position[1]] = np.array([255,255,255])
                 Poblacion.pop(indexcol)
                 Asesinatos +=1
                 return posicion
@@ -201,9 +232,6 @@ def posicionar(posm,posicion,a):
             return posicion
     else: 
         return ori
-
-gen = 0
-pasos = 0
 
 def terminados():
     salvados = []
@@ -216,7 +244,7 @@ def terminados():
             llegaron += 1
         else:
             conmuertos+=1
-    return salvados , conmuertos ,llegaron
+    return salvados, conmuertos, llegaron
 
 
 # Función de inicialización para la animación
@@ -227,60 +255,73 @@ def init():
 
 # Función de animación que se ejecutará en cada cuadro
 def animate(i):
-    global pasos, npasos,gen,Poblacion,Asesinatos
+    global pasos,npasos,gen,Poblacion,Asesinatos
+
     if pasos == npasos:
         Poblacion ,muertos,ganadores = terminados()
+        muertes_por_generacion.append(muertos)
+        asesinatos_por_generacion.append(Asesinatos)
+        ganadores_por_generacion.append(ganadores)
         #Escribir codigo de cruza 
-
+        if len(Poblacion) > 1:
+            c1, c2 = seleccion(Poblacion)
+            h1, h2 = cruce(c1, c2)
+            Poblacion.append(h1)
+            Poblacion.append(h2)
         #Rellenar poblacion
         rellenar_Poblacion()
-        Map.fill(False)
+        Map.fill(255)
         gen += 1 
         pasos = 0
-        print("Ganadores : ",ganadores)
-        print("Muertos por no llegas : " , muertos)
-        print("Asesinatos : ",Asesinatos)
+        print("Ganadores: ",ganadores)
+        print("Muertos por no llegar: ", muertos)
+        print("Asesinatos: ",Asesinatos)
         print("generacion N°",gen)
         #Reinicio asesinatos
         Asesinatos = 0
     else:
         for indi in Poblacion :
-            Map[indi.position[0],indi.position[1]] = False
+            Map[indi.position[0],indi.position[1]] = np.array([255,255,255])
             #Logica al revez de asalvo 
             if not asalvo(indi.position):
                 indi.move()
-            Map[indi.position[0],indi.position[1]] = True
+            Map[indi.position[0],indi.position[1]] = indi.color
 
     im.set_data(Map)
     pasos += 1
+    ax2.clear()
+    ax3.clear()
+    ax4.clear()
+
+    ax2.plot(muertes_por_generacion, label='Muertes')
+    ax2.set_xlabel('Generaciones')
+    ax2.set_ylabel('Cantidad')
+    ax2.set_title('Muertos por Generación')
+
+    ax3.plot(asesinatos_por_generacion, label='Asesinatos')
+    ax3.set_xlabel('Generaciones')
+    ax3.set_ylabel('Cantidad')
+    ax3.set_title('Asesinados por Generación')
+
+    ax4.plot(ganadores_por_generacion, label='Ganadores')
+    ax4.set_xlabel('Generaciones')
+    ax4.set_ylabel('Cantidad')
+    ax4.set_title('Ganadores por Generación')
+    
+    plt.pause(0.001) 
+
+    ax1.set_title('Generacion ' + str(gen))
     return [im]
 
-fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(8, 8))  
-plt.subplots_adjust(wspace=0.5)
-
+fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(8, 8), gridspec_kw={'height_ratios': [3, 1, 1, 1]})  
 im = ax1.imshow(Map, cmap='Reds', interpolation='nearest')
-plt.colorbar(im, ax=ax1)
-ax1.set_title('Posiciones finales de generacion')
-ax1.axis('off')
+ax1.axis('on')
 init_Poblacion()
-ax1.grid(color = 'black', linestyle = '--', linewidth = 0.5)
+gen = 0
+pasos = 0
 ani = animation.FuncAnimation(fig, animate, frames=nGen * npasos, init_func=init, blit=True)
 
-#ax2.plot(gen, [:nGen], color='red', label='Muertos')
-ax2.set_xlabel('Generaciones')
-ax2.set_ylabel('Cantidad')
-ax2.set_title('Muertos por Generación')
-
-#ax3.plot(gen, Asesinatos[:nGen], color='blue', label='Asesinados')
-ax3.set_xlabel('Generaciones')
-ax3.set_ylabel('Cantidad')
-ax3.set_title('Asesinados por Generación')
-
-#ax4.plot(gen, [:nGen], color='green', label='Ganadores')
-ax4.set_xlabel('Generaciones')
-ax4.set_ylabel('Cantidad')
-ax4.set_title('Ganadores por Generación')
-
 plt.tight_layout()
+plt.subplots_adjust(hspace=0.5)
 plt.show()
 
