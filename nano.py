@@ -308,18 +308,26 @@ def animate(i):
     ax4.set_ylabel('Cantidad')
     ax4.set_title('Ganadores por Generación')
     
-    plt.pause(0.001) 
+    plt.tight_layout(pad=1.0)
 
     ax1.set_title('Generacion ' + str(gen))
     return [im]
 
 fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(8, 8), gridspec_kw={'height_ratios': [3, 1, 1, 1]})  
 im = ax1.imshow(Map, cmap='Reds', interpolation='nearest')
+
+#Permite la cuadricula de movimiento para los individuos (tiles)
+ax1.set_xticks(np.arange(-0.5, Map.shape[1], 1), minor=True)
+ax1.set_yticks(np.arange(-0.5, Map.shape[0], 1), minor=True)
+ax1.grid(which='minor', color='gray', linestyle='-', linewidth=1)
+ax1.tick_params(which='minor', size=0)
 ax1.axis('on')
+
 init_Poblacion()
 gen = 0
 pasos = 0
-ani = animation.FuncAnimation(fig, animate, frames=nGen * npasos, init_func=init, blit=True)
+
+ani = animation.FuncAnimation(fig, animate, frames=nGen * npasos, init_func=init, blit=False)
 
 plt.tight_layout()
 plt.subplots_adjust(hspace=0.5)
