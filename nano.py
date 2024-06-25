@@ -3,16 +3,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
 
-seed = 19680801 
-np.random.seed(seed)
+# seed = np.random.randint(1,10000000)
+seed =  2614284
 print("semilla:", seed)
+np.random.seed(seed)
 NPob = 15 #Numero de poblacion
 Poblacion = []
 nGen = 50 #Numero de generaciones
-npasos = 50 #Numero de pasos maximos que puedendar
+npasos = 30 #Numero de pasos maximos que puedendar
 Asesinatos = 0
 Map_x = 10
-Map_y = 8
+Map_y =10
 Map = np.full((Map_x, Map_y,3),255)
 
 # Para almacenar datos de las gráficas
@@ -25,12 +26,6 @@ class individuo:
         self.genes = genes
         self.pasos = 0
         self.is_live = True
-    
-        # self asesino (true o false)
-
-        # [n, s, e, o, ne, no, se, so, asesino]
-        # [1, 1, 0, 1, 0 , 1,   0,  1,     0  ]
-        #self.gen()
 
         if len(self.genes) == 0:
             self.generar_genes()
@@ -42,7 +37,7 @@ class individuo:
         
             
     def ini_position(self):
-            Pos_x = np.random.randint(0, Map_x-1)
+            Pos_x = np.random.randint(0, Map_x)
             Pos_y = np.random.randint(0, 2)
             if np.array_equal( Map[Pos_x, Pos_y], np.array([255,255,255])):
                 self.position = [Pos_x, Pos_y]
@@ -50,86 +45,82 @@ class individuo:
                 return ([Pos_x, Pos_y])
             else: 
                return self.ini_position()
-    #javier
+            
     def generar_genes(self):
         #generear los genes de el individuo
-        self.genes = [np.random.randint(0,2) for _ in range(9)]
-        
-    
-    #javier 
+        self.genes = np.random.randint(0,10,size=9)
+        self.genes[8]=0
+        self.genes = self.genes / self.genes.sum()
+        #Probabilidad de asesino 
+        pasesino = [0.7,0.3]
+        self.genes[8] = np.random.choice([0,1],p=pasesino)
+            
     def mutar(self):
         # puedes cambiar los gene segun 
         prob_mutacion = 0.3  
         
         if np.random.uniform() <= prob_mutacion:
-            index = np.random.randint(9)
+            index = np.random.randint(8)
             self.genes[index] = np.random.uniform()
             self.genes = self.normalizar(self.genes)
 
     
     def normalizar(self,vec):
-        normalizado = []
-        x = sum(vec)
-        for i in vec:
-            normalizado.append(i/x)
-        return normalizado
+        vec[:8] /= sum(vec[:8])
+
+        return vec
 
     #coto
     def move(self):
-        mov = np.random.randint(len(self.genes)-1)# 8,1 OCHOYUNO
-        if self.genes[mov] == 1 :
-            self.pasos +=1
-            self.position=posicionar(mov , self.position.copy(), self.genes[8])
+        mov = np.random.choice(range(8),p=self.genes[:8])
+        self.pasos +=1
+        self.position=posicionar(mov , self.position.copy(), self.genes[8])
 
     def getColor(self):
-    # Ponderaciones para los colores RGB según las direcciones
-        ponderaciones = [-0.1, -0.1, -0.2, 0.6, -0.15, 0.2, -0.15, 0.2]
-        # Calcular la suma ponderada de los genes y las ponderaciones
-        suma = sum(ponderaciones[x] * self.genes[x] for x in range(len(ponderaciones)))
-        # Asegurarse de que suma esté en el rango [-1, 1]
-        suma = max(-1, min(suma, 1))
-        # Mapear la suma al rango de 0 a 255 para los colores RGB
-        if suma > 0:
-            color_value = int(suma * 255)  # Para valores positivos
-            # Ajustar intensidad según la dirección
-            if self.genes[3] == 1:  # oeste
-                color_value = min(color_value + 50, 255)  # Incrementar el canal azul para oeste
-            if self.genes[5] == 1:  # noroeste
-                color_value = min(color_value + 70, 255)  # Incrementar el canal azul más para noroeste
-            if self.genes[7] == 1:  # suroeste
-                color_value = min(color_value + 70, 255)  # Incrementar el canal azul más para suroeste
-            return (color_value, 0, 0)
-        else:
-            color_value = int(-suma * 255)  # Para valores negativos
-            # Ajustar intensidad según la dirección
-            if self.genes[3] == 1:  # oeste
-                color_value = min(color_value + 50, 255)  # Incrementar el canal rojo para oeste
-            if self.genes[5] == 1:  # noroeste
-                color_value = min(color_value + 70, 255)  # Incrementar el canal rojo más para noroeste
-            if self.genes[7] == 1:  # suroeste
-                color_value = min(color_value + 70, 255)  # Incrementar el canal rojo más para suroeste
+        if self.genes[8] == 1:
+            return np.array([0, 255, 255])
 
-            return (0, 0, color_value)
+        colores =np.array([
+            [145, 0, 109],#norte
+            [145, 0, 109],#sur
+            [0, 0, 255],    # este
+            [255, 0, 0],   # oeste
+            [73, 0, 182], #noreste
+            [218, 0, 36], #noroeste
+            [73, 0, 182], #sureste
+            [218, 0, 36], #suroeste
+        ])
 
-# pablo 
+        index = np.argmax(self.genes[0:8])
+        
+        return colores[index]
+ 
 def cruce(c1, c2):
     # Dividir c1 y c2 en dos partes
-    long_gen = len(c1.genes)
-    p_cruce = long_gen // 2
     
-    c1_1 = c1.genes[:p_cruce]
-    c1_2 = c1.genes[p_cruce:]
+    c1_1 = c1.genes[:4]
+    c1_2 = c1.genes[4:]
     
-    c2_1 = c2.genes[:p_cruce]
-    c2_2 = c2.genes[p_cruce:]
+    c2_1 = c2.genes[:4]
+    c2_2 = c2.genes[4:]
     
     # Cruce 
-    ch_1 = c1_1 + c2_2
-    ch_2 = c2_1 + c1_2
-    
+    ch_1 = np.concatenate([c1_1,c2_2])
+    ch_2 = np.concatenate([c2_1,c1_2])
     # Crear nuevos individuos
+    ch_1[:8] /= sum(ch_1[:8])
+    ch_2[:8] /= sum(ch_2[:8])
+
+    proase = 0.2
+    ch_1[8] = np.random.choice([0,1],p=[1-proase,proase])        
+    ch_2[8] = np.random.choice([0,1],p=[1-proase,proase])
+
     ch_1 = individuo(genes=ch_1)
     ch_2 = individuo(genes=ch_2)
+    
+    # Activamos mutar
+    ch_1.mutar()
+    ch_2.mutar()
     
     return ch_1, ch_2
 
@@ -199,32 +190,8 @@ def posicionar(posm,posicion,a):
     global Asesinatos
     ori = posicion.copy()
         # [n, s, e, o, ne, no, se, so, asesino]
-
     direction_values = [[-1,0],[1,0],[0,1],[0,-1],[-1,1],[-1,-1],[1,1],[1,-1]]
-    # if posm == 0 :
-    #     #n
-    #     posicion[0]-=1
-    # elif posm == 1:
-    #     #s
-    #     posicion[0]+=1
-    # elif posm == 2:
-    #     #e
-    #     posicion[1]+=1   
-    # elif posm == 3:
-    #     #o
-    #     posicion[1]-=1
-    # elif posm == 4:
-    #     #ne
-    #     posicion[1]+=1 ; posicion[0]-=1
-    # elif posm == 5:
-    #     #no
-    #     posicion[0]-=1 ; posicion[1]-=1
-    # elif posm == 6:
-    #     #se
-    #     posicion[0]+=1 ; posicion[1]+=1
-    # elif posm == 7:
-    #     #so
-    #     posicion[0]+=1 ; posicion[1]-=1; 
+
     posicion[0] += direction_values[posm][0]
     posicion[1] += direction_values[posm][1]
 
@@ -243,6 +210,7 @@ def posicionar(posm,posicion,a):
     else: 
         return ori
 
+
 def terminados():
     salvados = []
     conmuertos = 0
@@ -256,11 +224,19 @@ def terminados():
             conmuertos+=1
     return salvados, conmuertos, llegaron
 
+def numAsesinos():
+    global Poblacion
+    ass = 0
+    for indi in Poblacion:
+        if(indi.genes[8] == 1):
+            ass += 1
+    return ass
 
+# def graficarDatos():
+    
 # Función de inicialización para la animación
 def init():
     init_Poblacion()
-    print("generacion 0")
     ax1.set_title(f'Generación {gen}')
 
     im.set_data(Map)
@@ -280,7 +256,10 @@ def animate(i):
         ax2.plot(muertes_por_generacion, label='Muertes')
         ax3.plot(asesinatos_por_generacion, label='Asesinatos')
         ax4.plot(ganadores_por_generacion, label='Ganadores')
+        
 
+        if(gen == nGen):
+            ani.event_source.stop()
         #Escribir codigo de cruza 
         if len(Poblacion) > 1:
             c1, c2 = seleccion(Poblacion)
@@ -294,12 +273,12 @@ def animate(i):
         print("Muertos por no llegar: ", muertos)
         print("Asesinatos: ",Asesinatos)
         print("generacion N°",gen)
-        ax1.set_title(f'Generación {gen}')
 
         #Reinicio asesinatos
         Asesinatos = 0
-        gen += 1 
+        gen += 1
         pasos = 0
+        ax1.set_title(f'Generación {gen}, Asesinos {numAsesinos()}')
     else:
         for indi in Poblacion :
             #Logica al revez de asalvo 
@@ -309,11 +288,12 @@ def animate(i):
 
     im.set_data(Map)
     pasos += 1
+
     return [im]
 
 fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(8, 8), gridspec_kw={'height_ratios': [3, 1, 1, 1]}) 
 
-gen = 1
+gen = 0
 pasos = 0
 
 im = ax1.imshow(Map, cmap='Reds', interpolation='nearest')
