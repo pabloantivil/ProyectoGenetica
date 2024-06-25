@@ -52,7 +52,7 @@ class individuo:
     #javier 
     def mutar(self):
         # puedes cambiar los gene segun 
-        prob_mutacion = 0.1  
+        prob_mutacion = 0.3  
         
         if np.random.uniform() <= prob_mutacion:
             index = np.random.randint(9)
@@ -72,6 +72,10 @@ class individuo:
         mov = np.random.randint(len(self.genes)-1)# 8,1 OCHOYUNO
         if self.genes[mov] == 1 :
             self.position=posicionar(mov , self.position.copy(), self.genes[8])
+
+    def getColor():
+       # suma = [0.2, 0.2, 0.1, 0.6, 0.4, 0.4, , so]
+        pass
 
 
 # pablo 
@@ -125,20 +129,26 @@ def seleccion(poblacion):
 
 #benja
 def rellenar_Poblacion(): 
-    dif = -NPob - len(Poblacion) 
+    dif = NPob - len(Poblacion) 
     if dif > 0 :
         for i in range(dif):
-            Poblacion.append(individuo)
-
+            x = individuo()
+            Poblacion.append(x)
+            Map[x.position[0]][x.position[1]] = True
 #carlo
 def init_Poblacion():
-    global Poblacion
-    for x in range(NPob):
-        i = individuo()
-        Poblacion.append(i)
-        Map[i.position[0]][i.position[1]] = True
+    global Poblacion , Map_x
+    if NPob <= (Map_x*2-5):
+        for x in range(NPob):
+            i = individuo()
+            Poblacion.append(i)
+            Map[i.position[0]][i.position[1]] = True
     
-
+def asalvo(pos):
+    if pos[1] == Map_y-1 :
+        return True
+    else:
+        return False
 def colision(pos):
     index_indi = 0
     for a in Poblacion:
@@ -148,11 +158,6 @@ def colision(pos):
     return False ,index_indi
 
 # coto
-"""Map = [[0,X,0,0],
-          [0,0,0,0],
-          [0,0,0,0],
-          [0,0,0,0]]
-"""
 
 def posicionar(posm,posicion,a):
     global Asesinatos
@@ -200,6 +205,20 @@ def posicionar(posm,posicion,a):
 gen = 0
 pasos = 0
 
+def terminados():
+    salvados = []
+    conmuertos = 0
+    llegaron = 0
+    for p in Poblacion:
+        if asalvo(p.position):
+            p.position = p.ini_position()
+            salvados.append(p)
+            llegaron += 1
+        else:
+            conmuertos+=1
+    return salvados , conmuertos ,llegaron
+
+
 # Función de inicialización para la animación
 def init():
     print("generacion 0")
@@ -208,17 +227,28 @@ def init():
 
 # Función de animación que se ejecutará en cada cuadro
 def animate(i):
-    global pasos, npasos,gen
+    global pasos, npasos,gen,Poblacion,Asesinatos
     if pasos == npasos:
+        Poblacion ,muertos,ganadores = terminados()
+        #Escribir codigo de cruza 
+
+        #Rellenar poblacion
+        rellenar_Poblacion()
         Map.fill(False)
         gen += 1 
         pasos = 0
+        print("Ganadores : ",ganadores)
+        print("Muertos por no llegas : " , muertos)
         print("Asesinatos : ",Asesinatos)
         print("generacion N°",gen)
+        #Reinicio asesinatos
+        Asesinatos = 0
     else:
         for indi in Poblacion :
             Map[indi.position[0],indi.position[1]] = False
-            indi.move()
+            #Logica al revez de asalvo 
+            if not asalvo(indi.position):
+                indi.move()
             Map[indi.position[0],indi.position[1]] = True
 
     im.set_data(Map)
@@ -231,7 +261,7 @@ plt.subplots_adjust(wspace=0.5)
 im = ax1.imshow(Map, cmap='Reds', interpolation='nearest')
 plt.colorbar(im, ax=ax1)
 ax1.set_title('Posiciones finales de generacion')
-ax1.axis('on')
+ax1.axis('off')
 init_Poblacion()
 ax1.grid(color = 'black', linestyle = '--', linewidth = 0.5)
 ani = animation.FuncAnimation(fig, animate, frames=nGen * npasos, init_func=init, blit=True)
@@ -241,7 +271,7 @@ ax2.set_xlabel('Generaciones')
 ax2.set_ylabel('Cantidad')
 ax2.set_title('Muertos por Generación')
 
-#ax3.plot(gen, [:nGen], color='blue', label='Asesinados')
+#ax3.plot(gen, Asesinatos[:nGen], color='blue', label='Asesinados')
 ax3.set_xlabel('Generaciones')
 ax3.set_ylabel('Cantidad')
 ax3.set_title('Asesinados por Generación')
