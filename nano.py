@@ -9,10 +9,10 @@ print("semilla:", seed)
 NPob = 10
 Poblacion = []
 nGen = 10
-npasos = 50
+npasos = 100
 Asesinatos = 0
 Map_x = 10
-Map_y = 10
+Map_y = 20
 Map = np.full((Map_x, Map_y,3),255)
 
 # Para almacenar datos de las gráficas
