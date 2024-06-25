@@ -6,13 +6,13 @@ from matplotlib import animation
 seed = 19680801 
 np.random.seed(seed)
 print("semilla:", seed)
-NPob = 10
+NPob = 15 #Numero de poblacion
 Poblacion = []
-nGen = 10
-npasos = 100
+nGen = 50 #Numero de generaciones
+npasos = 100 #Numero de pasos maximos que puedendar
 Asesinatos = 0
 Map_x = 10
-Map_y = 20
+Map_y = 25
 Map = np.full((Map_x, Map_y,3),255)
 
 # Para almacenar datos de las gráficas
@@ -77,6 +77,7 @@ class individuo:
     def move(self):
         mov = np.random.randint(len(self.genes)-1)# 8,1 OCHOYUNO
         if self.genes[mov] == 1 :
+            self.pasos +=1
             self.position=posicionar(mov , self.position.copy(), self.genes[8])
 
     def getColor(self):
@@ -174,6 +175,8 @@ def init_Poblacion():
             i = individuo()
             Poblacion.append(i)
             Map[i.position[0]][i.position[1]] = i.color
+    else:
+        print("Poblacion demaciado grande")
     
 def asalvo(pos):
     if pos[1] == Map_y-1 :
@@ -297,17 +300,23 @@ def animate(i):
     ax2.set_xlabel('Generaciones')
     ax2.set_ylabel('Cantidad')
     ax2.set_title('Muertos por Generación')
+    ax2.set_xlim([0,nGen])
+    ax2.set_ylim([0,NPob])
+
 
     ax3.plot(asesinatos_por_generacion, label='Asesinatos')
     ax3.set_xlabel('Generaciones')
     ax3.set_ylabel('Cantidad')
     ax3.set_title('Asesinados por Generación')
+    ax3.set_xlim([0,nGen])
+    ax3.set_ylim([0,NPob])
 
     ax4.plot(ganadores_por_generacion, label='Ganadores')
     ax4.set_xlabel('Generaciones')
     ax4.set_ylabel('Cantidad')
     ax4.set_title('Ganadores por Generación')
-    
+    ax4.set_xlim([0,nGen])
+    ax4.set_ylim([0,NPob])
     plt.tight_layout(pad=1.0)
 
     ax1.set_title(f'Generación {gen}, Iteración {pasos}')
@@ -315,7 +324,8 @@ def animate(i):
 
 fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(8, 8), gridspec_kw={'height_ratios': [3, 1, 1, 1]})  
 im = ax1.imshow(Map, cmap='Reds', interpolation='nearest')
-
+mng = plt.get_current_fig_manager()
+mng.window.state('zoomed')  # En Windows
 #Permite la cuadricula de movimiento para los individuos (tiles)
 ax1.set_xticks(np.arange(-0.5, Map.shape[1], 1), minor=True)
 ax1.set_yticks(np.arange(-0.5, Map.shape[0], 1), minor=True)
@@ -324,10 +334,10 @@ ax1.tick_params(which='minor', size=0)
 ax1.axis('on')
 
 init_Poblacion()
-gen = 0
+gen = 1
 pasos = 0
 
-ani = animation.FuncAnimation(fig, animate, frames=nGen * npasos, init_func=init, interval=5, blit=False)
+ani = animation.FuncAnimation(fig, animate, frames=nGen * npasos, init_func=init, interval=0.00000000001, blit=False)
 
 plt.tight_layout()
 plt.subplots_adjust(hspace=0.5)
