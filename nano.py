@@ -29,7 +29,7 @@ class individuo:
         # self asesino (true o false)
 
         # [n, s, e, o, ne, no, se, so, asesino]
-        # [1, 1, 0, 1, 0 , 1,   0,  1,     0  ]
+        # [1, 1, 1, 1, 1 , 1,   1,  1,     1  ]
         #self.gen()
 
         if len(self.genes) == 0:
@@ -52,7 +52,12 @@ class individuo:
     #javier
     def generar_genes(self):
         #generear los genes de el individuo
-        self.genes = [np.random.randint(0,2) for _ in range(9)]
+        self.genes = np.random.randint(0,10,size=9)
+        self.genes[8]=0
+        self.genes = self.genes / self.genes.sum()
+        #Probabilidad de asesino 
+        pasesino = [0.8,0.2]
+        self.genes[8] = np.random.choice([0,1],p=pasesino)
         
     
     #javier 
@@ -75,10 +80,10 @@ class individuo:
 
     #coto
     def move(self):
-        mov = np.random.randint(len(self.genes)-1)# 8,1 OCHOYUNO
-        if self.genes[mov] == 1 :
-            self.pasos +=1
-            self.position=posicionar(mov , self.position.copy(), self.genes[8])
+        mov = np.random.choice(range(8),p=self.genes[:8])
+           
+        self.pasos +=1
+        self.position=posicionar(mov , self.position.copy(), self.genes[8])
 
     def getColor(self):
     # Ponderaciones para los colores RGB según las direcciones
@@ -130,6 +135,10 @@ def cruce(c1, c2):
     ch_1 = individuo(genes=ch_1)
     ch_2 = individuo(genes=ch_2)
     
+    # Activamos mutar
+    ch_1.mutar()
+    ch_2.mutar()
+
     return ch_1, ch_2
 
 #benja
@@ -300,7 +309,7 @@ def animate(i):
     ax2.set_xlabel('Generaciones')
     ax2.set_ylabel('Cantidad')
     ax2.set_title('Muertos por Generación')
-    ax2.set_xlim([0,nGen])
+    ax2.set_xlim([1,nGen])
     ax2.set_ylim([0,NPob])
 
 
@@ -308,14 +317,14 @@ def animate(i):
     ax3.set_xlabel('Generaciones')
     ax3.set_ylabel('Cantidad')
     ax3.set_title('Asesinados por Generación')
-    ax3.set_xlim([0,nGen])
+    ax3.set_xlim([1,nGen])
     ax3.set_ylim([0,NPob])
 
     ax4.plot(ganadores_por_generacion, label='Ganadores')
     ax4.set_xlabel('Generaciones')
     ax4.set_ylabel('Cantidad')
     ax4.set_title('Ganadores por Generación')
-    ax4.set_xlim([0,nGen])
+    ax4.set_xlim([1,nGen])
     ax4.set_ylim([0,NPob])
     plt.tight_layout(pad=1.0)
 
