@@ -152,14 +152,15 @@ def probabilidades(individuos):
         probabilidad = p * (1 - p) ** i
         individuo.seleccion = probabilidad
 
-def seleccion(poblacion):
-    poblacion.sort(key=lambda sujeto: sujeto.pasos)
+def seleccion():
+    global Poblacion
+    fitness()
     
-    probabilidades(poblacion)
+    probabilidades(Poblacion)
     
     sel = []
     while len(sel) < 2:
-        for individuo in poblacion:
+        for individuo in Poblacion:
             if random.random() < individuo.seleccion:
                 sel.append(individuo)
             if len(sel) == 2:
