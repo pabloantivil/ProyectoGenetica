@@ -9,10 +9,10 @@ print("semilla:", seed)
 NPob = 15 #Numero de poblacion
 Poblacion = []
 nGen = 50 #Numero de generaciones
-npasos = 100 #Numero de pasos maximos que puedendar
+npasos = 50 #Numero de pasos maximos que puedendar
 Asesinatos = 0
 Map_x = 10
-Map_y = 25
+Map_y = 8
 Map = np.full((Map_x, Map_y,3),255)
 
 # Para almacenar datos de las gráficas
@@ -36,6 +36,7 @@ class individuo:
             self.generar_genes()
         else:
             self.mutar()
+
         self.color = self.getColor()
         self.position = self.ini_position()
         
@@ -183,6 +184,7 @@ def asalvo(pos):
         return True
     else:
         return False
+    
 def colision(pos):
     index_indi = 0
     for a in Poblacion:
@@ -197,30 +199,35 @@ def posicionar(posm,posicion,a):
     global Asesinatos
     ori = posicion.copy()
         # [n, s, e, o, ne, no, se, so, asesino]
-    if posm == 0 :
-        #n
-        posicion[0]-=1
-    elif posm == 1:
-        #s
-        posicion[0]+=1
-    elif posm == 2:
-        #e
-        posicion[1]+=1   
-    elif posm == 3:
-        #o
-        posicion[1]-=1
-    elif posm == 4:
-        #ne
-        posicion[1]+=1 ; posicion[0]-=1
-    elif posm == 5:
-        #no
-        posicion[0]-=1 ; posicion[1]-=1
-    elif posm == 6:
-        #se
-        posicion[0]+=1 ; posicion[1]+=1
-    elif posm == 7:
-        #so
-        posicion[0]+=1 ; posicion[1]-=1; 
+
+    direction_values = [[-1,0],[1,0],[0,1],[0,-1],[-1,1],[-1,-1],[1,1],[1,-1]]
+    # if posm == 0 :
+    #     #n
+    #     posicion[0]-=1
+    # elif posm == 1:
+    #     #s
+    #     posicion[0]+=1
+    # elif posm == 2:
+    #     #e
+    #     posicion[1]+=1   
+    # elif posm == 3:
+    #     #o
+    #     posicion[1]-=1
+    # elif posm == 4:
+    #     #ne
+    #     posicion[1]+=1 ; posicion[0]-=1
+    # elif posm == 5:
+    #     #no
+    #     posicion[0]-=1 ; posicion[1]-=1
+    # elif posm == 6:
+    #     #se
+    #     posicion[0]+=1 ; posicion[1]+=1
+    # elif posm == 7:
+    #     #so
+    #     posicion[0]+=1 ; posicion[1]-=1; 
+    posicion[0] += direction_values[posm][0]
+    posicion[1] += direction_values[posm][1]
+
     if posicion[0]>=0 and posicion[1]>=0 and posicion[0]<Map_x and posicion[1] < Map_y:
         colisiono , indexcol = colision(posicion)
         if colisiono:
@@ -252,19 +259,28 @@ def terminados():
 
 # Función de inicialización para la animación
 def init():
+    init_Poblacion()
     print("generacion 0")
+    ax1.set_title(f'Generación {gen}')
+
     im.set_data(Map)
     return [im]
 
 # Función de animación que se ejecutará en cada cuadro
 def animate(i):
     global pasos,npasos,gen,Poblacion,Asesinatos
-
+    Map.fill(255)
     if pasos == npasos:
+
         Poblacion ,muertos,ganadores = terminados()
+
         muertes_por_generacion.append(muertos)
         asesinatos_por_generacion.append(Asesinatos)
         ganadores_por_generacion.append(ganadores)
+        ax2.plot(muertes_por_generacion, label='Muertes')
+        ax3.plot(asesinatos_por_generacion, label='Asesinatos')
+        ax4.plot(ganadores_por_generacion, label='Ganadores')
+
         #Escribir codigo de cruza 
         if len(Poblacion) > 1:
             c1, c2 = seleccion(Poblacion)
@@ -273,59 +289,42 @@ def animate(i):
             Poblacion.append(h2)
         #Rellenar poblacion
         rellenar_Poblacion()
-        Map.fill(255)
-        gen += 1 
-        pasos = 0
+
         print("Ganadores: ",ganadores)
         print("Muertos por no llegar: ", muertos)
         print("Asesinatos: ",Asesinatos)
         print("generacion N°",gen)
+        ax1.set_title(f'Generación {gen}')
+
         #Reinicio asesinatos
         Asesinatos = 0
+        gen += 1 
+        pasos = 0
     else:
         for indi in Poblacion :
-            Map[indi.position[0],indi.position[1]] = np.array([255,255,255])
             #Logica al revez de asalvo 
-            if not asalvo(indi.position):
+            if indi.position[1] < Map_y-1:
                 indi.move()
             Map[indi.position[0],indi.position[1]] = indi.color
 
     im.set_data(Map)
     pasos += 1
-    ax2.clear()
-    ax3.clear()
-    ax4.clear()
-
-    ax2.plot(muertes_por_generacion, label='Muertes')
-    ax2.set_xlabel('Generaciones')
-    ax2.set_ylabel('Cantidad')
-    ax2.set_title('Muertos por Generación')
-    ax2.set_xlim([0,nGen])
-    ax2.set_ylim([0,NPob])
-
-
-    ax3.plot(asesinatos_por_generacion, label='Asesinatos')
-    ax3.set_xlabel('Generaciones')
-    ax3.set_ylabel('Cantidad')
-    ax3.set_title('Asesinados por Generación')
-    ax3.set_xlim([0,nGen])
-    ax3.set_ylim([0,NPob])
-
-    ax4.plot(ganadores_por_generacion, label='Ganadores')
-    ax4.set_xlabel('Generaciones')
-    ax4.set_ylabel('Cantidad')
-    ax4.set_title('Ganadores por Generación')
-    ax4.set_xlim([0,nGen])
-    ax4.set_ylim([0,NPob])
-    plt.tight_layout(pad=1.0)
-
-    ax1.set_title(f'Generación {gen}, Iteración {pasos}')
     return [im]
 
-fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(8, 8), gridspec_kw={'height_ratios': [3, 1, 1, 1]})  
+fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(8, 8), gridspec_kw={'height_ratios': [3, 1, 1, 1]}) 
+
+gen = 1
+pasos = 0
+
 im = ax1.imshow(Map, cmap='Reds', interpolation='nearest')
+ani = animation.FuncAnimation(fig, animate, frames=nGen * npasos, init_func=init, interval=0.00001, blit=False)
+
 mng = plt.get_current_fig_manager()
 mng.window.state('zoomed')  # En Windows
+
+plt.tight_layout()
+plt.subplots_adjust(hspace=0.5)
+
 #Permite la cuadricula de movimiento para los individuos (tiles)
 ax1.set_xticks(np.arange(-0.5, Map.shape[1], 1), minor=True)
 ax1.set_yticks(np.arange(-0.5, Map.shape[0], 1), minor=True)
@@ -333,13 +332,26 @@ ax1.grid(which='minor', color='gray', linestyle='-', linewidth=1)
 ax1.tick_params(which='minor', size=0)
 ax1.axis('on')
 
-init_Poblacion()
-gen = 1
-pasos = 0
+ax2.set_xlabel('Generaciones')
+ax2.set_ylabel('Cantidad')
+ax2.set_title('Muertos por Generación')
+ax2.set_xlim([0,nGen])
+ax2.set_ylim([0,NPob])
 
-ani = animation.FuncAnimation(fig, animate, frames=nGen * npasos, init_func=init, interval=0.00000000001, blit=False)
+ax3.set_xlabel('Generaciones')
+ax3.set_ylabel('Cantidad')
+ax3.set_title('Asesinados por Generación')
+ax3.set_xlim([0,nGen])
+ax3.set_ylim([0,NPob])
 
-plt.tight_layout()
-plt.subplots_adjust(hspace=0.5)
+ax4.set_xlabel('Generaciones')
+ax4.set_ylabel('Cantidad')
+ax4.set_title('Ganadores por Generación')
+ax4.set_xlim([0,nGen])
+ax4.set_ylim([0,NPob])
+
+plt.tight_layout(pad=2.0)
+
+
 plt.show()
 
