@@ -327,7 +327,7 @@ init_Poblacion()
 gen = 0
 pasos = 0
 
-ani = animation.FuncAnimation(fig, animate, frames=nGen * npasos, init_func=init, blit=False)
+ani = animation.FuncAnimation(fig, animate, frames=nGen * npasos, init_func=init, interval=5, blit=False)
 
 plt.tight_layout()
 plt.subplots_adjust(hspace=0.5)
