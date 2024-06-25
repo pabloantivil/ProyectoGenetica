@@ -238,7 +238,7 @@ def numAsesinos():
 # Función de inicialización para la animación
 def init():
     init_Poblacion()
-    ax1.set_title(f'Generación {gen}')
+    ax1.set_title(f'Generación {gen}, Asesinos {numAsesinos()}')
 
     im.set_data(Map)
     return [im]
@@ -263,7 +263,7 @@ def animate(i):
             ani.event_source.stop()
         #Escribir codigo de cruza 
         if len(Poblacion) > 1:
-            c1, c2 = seleccion(Poblacion)
+            c1, c2 = seleccion()
             h1, h2 = cruce(c1, c2)
             Poblacion.append(h1)
             Poblacion.append(h2)
