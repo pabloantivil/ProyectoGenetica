@@ -310,7 +310,7 @@ def animate(i):
     
     plt.tight_layout(pad=1.0)
 
-    ax1.set_title('Generacion ' + str(gen))
+    ax1.set_title(f'Generación {gen}, Iteración {pasos}')
     return [im]
 
 fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(8, 8), gridspec_kw={'height_ratios': [3, 1, 1, 1]})  
